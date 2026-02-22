@@ -1,0 +1,11 @@
+.git
+.github
+*.md
+LICENSE
+scripts/
+
+# Build artifacts
+hecate-app-snake-duel-stabled/_build/
+hecate-app-snake-duel-stablew/node_modules/
+hecate-app-snake-duel-stablew/dist/
+hecate-app-snake-duel-stablew/.svelte-kit/
