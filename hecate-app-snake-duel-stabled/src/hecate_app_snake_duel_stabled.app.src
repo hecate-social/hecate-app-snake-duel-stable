@@ -1,12 +1,14 @@
 {application, hecate_app_snake_duel_stabled, [
     {description, "Hecate Snake Duel Stable - Neuroevolution Training Daemon"},
-    {vsn, "0.1.0"},
+    {vsn, "0.1.1"},
     {registered, [hecate_app_snake_duel_stabled_sup]},
     {mod, {hecate_app_snake_duel_stabled_app, []}},
     {applications, [
         kernel, stdlib, crypto,
-        cowboy, reckon_db, evoq, reckon_evoq,
-        esqlite, faber_tweann, faber_neuroevolution
+        cowboy,
+        run_snake_duel,
+        breed_snake_gladiators,
+        query_snake_gladiators
     ]},
     {env, [
         {data_dir, "~/.hecate/hecate-app-snake-duel-stabled"},

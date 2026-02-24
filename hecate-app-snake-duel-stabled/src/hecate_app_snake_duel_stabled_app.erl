@@ -1,11 +1,7 @@
 -module(hecate_app_snake_duel_stabled_app).
 -behaviour(application).
 
--include_lib("reckon_db/include/reckon_db.hrl").
-
 -export([start/2, stop/1]).
-
--dialyzer({nowarn_function, start_gladiator_store/0}).
 
 start(_StartType, _StartArgs) ->
     case application:get_env(hecate_app_snake_duel_stabled, enabled, true) of
@@ -14,8 +10,6 @@ start(_StartType, _StartArgs) ->
             {ok, spawn(fun() -> receive stop -> ok end end)};
         true ->
             ok = app_snake_duel_stabled_paths:ensure_layout(),
-            ok = ensure_pg_scope(),
-            ok = start_gladiator_store(),
             ok = start_cowboy(),
             logger:info("[hecate_app_snake_duel_stabled] Started, socket at ~s",
                         [app_snake_duel_stabled_paths:socket_path("api.sock")]),
@@ -27,42 +21,14 @@ stop(_State) ->
     cleanup_socket(),
     ok.
 
-ensure_pg_scope() ->
-    case pg:start_link(hecate_app_snake_duel_stabled) of
-        {ok, _Pid} -> ok;
-        {error, {already_started, _Pid}} -> ok
-    end.
-
-start_gladiator_store() ->
-    DataDir = app_snake_duel_stabled_paths:reckon_path("gladiator"),
-    ok = filelib:ensure_path(DataDir),
-    Config = #store_config{
-        store_id = gladiator_store,
-        data_dir = DataDir,
-        mode = single,
-        writer_pool_size = 5,
-        reader_pool_size = 5,
-        gateway_pool_size = 2,
-        options = #{}
-    },
-    case reckon_db_sup:start_store(Config) of
-        {ok, _Pid} ->
-            logger:info("[hecate_app_snake_duel_stabled] gladiator_store ready"),
-            ok;
-        {error, {already_started, _Pid}} ->
-            logger:info("[hecate_app_snake_duel_stabled] gladiator_store already running"),
-            ok;
-        {error, Reason} ->
-            logger:error("[hecate_app_snake_duel_stabled] Failed to start gladiator_store: ~p", [Reason]),
-            error({gladiator_store_start_failed, Reason})
-    end.
-
 start_cowboy() ->
     SocketPath = app_snake_duel_stabled_paths:socket_path("api.sock"),
     cleanup_socket_file(SocketPath),
+    StaticDir = static_dir(),
     Routes = [
         {"/health", app_snake_duel_stabled_health_api, []},
         {"/manifest", app_snake_duel_stabled_manifest_api, []},
+        {"/ui/[...]", cowboy_static, {dir, StaticDir, [{mimetypes, cow_mimetypes, all}]}},
         {"/api/arcade/gladiators/stables", initiate_stable_api, []},
         {"/api/arcade/gladiators/stables/:stable_id", get_stable_by_id_api, []},
         {"/api/arcade/gladiators/stables/:stable_id/champion", get_champion_api, []},
@@ -104,3 +70,7 @@ cleanup_socket_file(Path) ->
             logger:warning("[hecate_app_snake_duel_stabled] Failed to remove socket ~s: ~p", [Path, Reason]),
             ok
     end.
+
+static_dir() ->
+    PrivDir = code:priv_dir(hecate_app_snake_duel_stabled),
+    filename:join(PrivDir, "static").
