@@ -16,7 +16,7 @@
          get_champions/1, get_training_history/1]).
 -export([get_heroes/0, get_hero/1]).
 
--record(state, {db :: reference()}).
+-record(state, {db :: esqlite3:esqlite3()}).
 
 -spec start_link() -> {ok, pid()} | {error, term()}.
 start_link() ->
@@ -279,8 +279,7 @@ terminate(_Reason, #state{db = Db}) ->
 step_until_done(Stmt) ->
     case esqlite3:step(Stmt) of
         '$done' -> ok;
-        {row, _} -> step_until_done(Stmt);
-        ok -> ok;
+        Row when is_list(Row) -> step_until_done(Stmt);
         {error, Code} ->
             logger:error("[query_snake_gladiators_store] SQLite step error: ~p", [Code]),
             {error, Code}

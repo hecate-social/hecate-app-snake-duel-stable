@@ -15,7 +15,7 @@
 -module(gladiator_environment).
 -behaviour(agent_environment).
 
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 -export([name/0, init/1, spawn_agent/2, tick/2, apply_action/3,

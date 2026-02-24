@@ -2,7 +2,7 @@
 %%%
 %%% Creates CfC (Closed-form Continuous-time) networks with LTC neurons
 %%% in hidden layers. CfC neurons have input-dependent time constants,
-%%% enabling temporal reasoning -- the snake can adapt its behavior
+%%% enabling temporal reasoning — the snake can adapt its behavior
 %%% based on game history, not just current state.
 %%%
 %%% Hidden layers use tanh activation with CfC dynamics.

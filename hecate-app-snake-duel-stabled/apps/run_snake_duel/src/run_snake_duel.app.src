@@ -1,0 +1,10 @@
+{application, run_snake_duel, [
+    {description, "Snake Duel game engine and AI (shared by dueld and stabled)"},
+    {vsn, "0.1.0"},
+    {mod, {run_snake_duel_app, []}},
+    {applications, [kernel, stdlib, crypto]},
+    {registered, [run_snake_duel_sup]},
+    {modules, []},
+    {licenses, ["Apache-2.0"]},
+    {links, [{"GitHub", "https://github.com/hecate-social/hecate-app-snake-duel-stable"}]}
+]}.

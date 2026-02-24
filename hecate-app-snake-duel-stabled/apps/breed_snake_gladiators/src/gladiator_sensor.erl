@@ -1,4 +1,4 @@
-%%% @doc Sensor for snake gladiator -- reads game state into 31 floats.
+%%% @doc Sensor for snake gladiator — reads game state into 31 floats.
 %%%
 %%% Inputs (all normalized ~[-1, 1]):
 %%%   1-2:   Relative food position (dx, dy) / grid_dim
@@ -22,7 +22,7 @@
 -module(gladiator_sensor).
 -behaviour(agent_sensor).
 
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 -export([name/0, input_count/0, read/2]).

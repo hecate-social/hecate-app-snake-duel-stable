@@ -11,7 +11,7 @@
 %%% @end
 -module(headless_champion_duel).
 
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 -export([run/2, run_batch/3]).

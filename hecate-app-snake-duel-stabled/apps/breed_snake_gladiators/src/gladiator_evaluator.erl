@@ -1,4 +1,4 @@
-%%% @doc Evaluator for snake gladiator -- converts game metrics to fitness.
+%%% @doc Evaluator for snake gladiator — converts game metrics to fitness.
 %%%
 %%% Fitness formula uses configurable weights (from metrics map or defaults):
 %%%   survival_ticks * survival_weight
@@ -60,8 +60,15 @@ calculate_fitness(Metrics) ->
     ProximityScore = ProximityDelta * ProximityW,
 
     %% Circle penalty based on exploration ratio.
+    %% CircleRatio: 0.0 = all moves to new cells, 1.0 = stuck on same cell.
+    %% Scaled to [0, 100] range so it competes with (not dwarfs) food/win rewards.
+    %% Old approach counted raw revisits which grew unboundedly with game length,
+    %% overwhelming all positive signals on a finite grid.
     CircleRatio = 1.0 - (UniquePositions / max(1.0, Ticks + 0.0)),
     CirclePenalty = CircleRatio * 100.0 * CircleP,
 
+    %% No max(0.0, ...) clamp — negative fitness preserves gradient among
+    %% bad performers so evolution can distinguish "slightly circling" from
+    %% "wildly circling." Tournament selection handles negative values fine.
     SurvivalScore + FoodScore + WinScore + KillScore +
         WallKillScore + ProximityScore + CirclePenalty.

@@ -1,4 +1,4 @@
-%%% @doc Actuator for snake gladiator -- converts 5 network outputs to action.
+%%% @doc Actuator for snake gladiator — converts 5 network outputs to action.
 %%%
 %%% Takes argmax of first 4 outputs [up, down, left, right] for direction.
 %%% 5th output is drop-tail signal (> 0.5 = drop wall).
@@ -8,7 +8,7 @@
 -module(gladiator_actuator).
 -behaviour(agent_actuator).
 
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 -export([name/0, output_count/0, act/3]).

@@ -56,15 +56,15 @@ handle(Cmd) ->
 %% {26, [28, 14], 5} by zero-padding weight matrices.
 %%
 %% Migration strategy per layer:
-%%   Layer 1 (input->hidden1): 24x22 -> 28x26
+%%   Layer 1 (input→hidden1): 24x22 → 28x26
 %%     - Existing 24 rows: each gets 4 zero columns (new inputs)
 %%     - Add 4 new rows of 26 zeros + zero biases (new hidden neurons)
-%%   Layer 2 (hidden1->hidden2): 12x24 -> 14x28
+%%   Layer 2 (hidden1→hidden2): 12x24 → 14x28
 %%     - Existing 12 rows: each gets 4 zero columns (connections from new h1 neurons)
 %%     - Add 2 new rows of 28 zeros + zero biases (new hidden neurons)
-%%   Layer 3 (hidden2->output): 4x12 -> 5x14
+%%   Layer 3 (hidden2→output): 4x12 → 5x14
 %%     - Existing 4 rows: each gets 2 zero columns (connections from new h2 neurons)
-%%     - Add 1 new row of 14 zeros + zero bias (drop-tail output ~ 0 -> never drops)
+%%     - Add 1 new row of 14 zeros + zero bias (drop-tail output ≈ 0 → never drops)
 maybe_migrate_topology(#{<<"layers">> := Layers} = NetworkData) ->
     [#{<<"weights">> := W1} | _] = Layers,
     FirstRowLen = length(hd(W1)),
@@ -90,7 +90,7 @@ maybe_migrate_topology(#{<<"layers">> := Layers} = NetworkData) ->
 
 %% Pad only the first layer with extra zero columns for new inputs.
 %% Hidden layers and output layer keep their topology unchanged.
-%% Works for any N extra inputs (e.g., v2->v3 adds 4 flood-fill sensors).
+%% Works for any N extra inputs (e.g., v2→v3 adds 4 flood-fill sensors).
 migrate_input_pad(#{<<"layers">> := [L1 | Rest]} = NetworkData, ExtraCols) ->
     #{<<"weights">> := W1} = L1,
     W1Padded = [Row ++ lists:duplicate(ExtraCols, 0.0) || Row <- W1],
@@ -104,7 +104,7 @@ migrate_layers(#{<<"layers">> := [L1, L2, L3]} = NetworkData) ->
     #{<<"weights">> := W2, <<"biases">> := B2} = L2,
     #{<<"weights">> := W3, <<"biases">> := B3} = L3,
 
-    %% Layer 1: 24x22 -> 28x26 (4 new input cols, 4 new neuron rows)
+    %% Layer 1: 24x22 → 28x26 (4 new input cols, 4 new neuron rows)
     NewInputCols = ?GLADIATOR_INPUTS - ?GLADIATOR_INPUTS_V1,  %% 4
     NewH1Neurons = 28 - 24,  %% 4
     W1a = [Row ++ lists:duplicate(NewInputCols, 0.0) || Row <- W1],
@@ -112,7 +112,7 @@ migrate_layers(#{<<"layers">> := [L1, L2, L3]} = NetworkData) ->
     W1b = W1a ++ lists:duplicate(NewH1Neurons, ZeroRow1),
     B1b = B1 ++ lists:duplicate(NewH1Neurons, 0.0),
 
-    %% Layer 2: 12x24 -> 14x28 (4 new input cols from h1, 2 new neuron rows)
+    %% Layer 2: 12x24 → 14x28 (4 new input cols from h1, 2 new neuron rows)
     NewH1Cols = 28 - 24,  %% 4
     NewH2Neurons = 14 - 12,  %% 2
     W2a = [Row ++ lists:duplicate(NewH1Cols, 0.0) || Row <- W2],
@@ -120,7 +120,7 @@ migrate_layers(#{<<"layers">> := [L1, L2, L3]} = NetworkData) ->
     W2b = W2a ++ lists:duplicate(NewH2Neurons, ZeroRow2),
     B2b = B2 ++ lists:duplicate(NewH2Neurons, 0.0),
 
-    %% Layer 3: 4x12 -> 5x14 (2 new input cols from h2, 1 new output row)
+    %% Layer 3: 4x12 → 5x14 (2 new input cols from h2, 1 new output row)
     NewH2Cols = 14 - 12,  %% 2
     NewOutputs = ?GLADIATOR_OUTPUTS - ?GLADIATOR_OUTPUTS_V1,  %% 1
     W3a = [Row ++ lists:duplicate(NewH2Cols, 0.0) || Row <- W3],

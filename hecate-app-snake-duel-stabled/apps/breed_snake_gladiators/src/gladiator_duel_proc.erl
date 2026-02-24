@@ -16,7 +16,7 @@
 -module(gladiator_duel_proc).
 -behaviour(gen_server).
 
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 -export([start_link/1]).
@@ -51,7 +51,7 @@ init(#{match_id := MatchId, network := Network} = Config) ->
     TickMs = maps:get(tick_ms, Config, ?DEFAULT_TICK_MS),
 
     %% Compile network for fast NIF evaluation (standard networks only).
-    %% CfC networks skip NIF compilation -- they use evaluate_with_state
+    %% CfC networks skip NIF compilation — they use evaluate_with_state
     %% which maintains internal state and isn't compatible with compiled refs.
     CompiledNet = case network_evaluator:get_neuron_meta(Network) of
         undefined -> network_evaluator:compile_for_nif(Network);
@@ -87,7 +87,7 @@ handle_call(_Msg, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-%% Countdown tick -- final
+%% Countdown tick — final
 handle_info(countdown_tick, #gduel{game = #game_state{countdown = 1} = Game,
                                     match_id = MatchId, tick_ms = TickMs} = State) ->
     Game1 = Game#game_state{countdown = 0, status = running},
@@ -95,7 +95,7 @@ handle_info(countdown_tick, #gduel{game = #game_state{countdown = 1} = Game,
     Timer = erlang:send_after(TickMs, self(), game_tick),
     {noreply, State#gduel{game = Game1, timer = Timer}};
 
-%% Countdown tick -- counting
+%% Countdown tick — counting
 handle_info(countdown_tick, #gduel{game = #game_state{countdown = N} = Game,
                                     match_id = MatchId} = State) when N > 1 ->
     Game1 = Game#game_state{countdown = N - 1},
@@ -103,10 +103,12 @@ handle_info(countdown_tick, #gduel{game = #game_state{countdown = N} = Game,
     Timer = erlang:send_after(?COUNTDOWN_MS, self(), countdown_tick),
     {noreply, State#gduel{game = Game1, timer = Timer}};
 
-%% Game tick -- neural network vs heuristic AI
+%% Game tick — neural network vs heuristic AI
 handle_info(game_tick, #gduel{game = Game0, match_id = MatchId,
                                tick_ms = TickMs, network = Net} = State) ->
     %% Player 1 (champion): neural network evaluation
+    %% CfC networks use evaluate_with_state (returns updated network with new internal state)
+    %% Standard networks use evaluate (stateless)
     Context = #{game => Game0},
     Inputs = gladiator_sensor:read(#{player => player1}, Context),
     {Outputs, UpdatedNet} = case network_evaluator:get_neuron_meta(Net) of
@@ -117,7 +119,7 @@ handle_info(game_tick, #gduel{game = Game0, match_id = MatchId,
     end,
     {ok, {Dir1, Drop1}} = gladiator_actuator:act(Outputs, #{player => player1}, Context),
 
-    %% Player 2 (heuristic AI) -- wall-aware
+    %% Player 2 (heuristic AI) — wall-aware
     #game_state{snake1 = S1, snake2 = S2, food = Food,
                 poison_apples = PA, walls = Walls} = Game0,
     Dir2 = snake_duel_ai:choose_direction(S2, S1, Food, PA, Walls, player2),

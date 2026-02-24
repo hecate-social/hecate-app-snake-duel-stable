@@ -43,11 +43,8 @@ start_stream(StableId, Req0, _State) ->
         Pid when is_pid(Pid) ->
             case is_process_alive(Pid) of
                 true ->
-                    case training_proc:get_status(Pid) of
-                        {ok, StatusMap} ->
-                            send_state(Req1, StatusMap);
-                        _ -> ok
-                    end;
+                    {ok, StatusMap} = training_proc:get_status(Pid),
+                    send_state(Req1, StatusMap);
                 false -> ok
             end
     end,

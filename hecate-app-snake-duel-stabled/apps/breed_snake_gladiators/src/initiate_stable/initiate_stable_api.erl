@@ -237,13 +237,11 @@ extract_enable_ltc(TrainingConfig) when is_map(TrainingConfig) ->
         true -> true;
         <<"true">> -> true;
         _ -> false
-    end;
-extract_enable_ltc(_) -> false.
+    end.
 
 extract_enable_lc_chain(TrainingConfig) when is_map(TrainingConfig) ->
     case maps:get(enable_lc_chain, TrainingConfig, undefined) of
         true -> true;
         <<"true">> -> true;
         _ -> false
-    end;
-extract_enable_lc_chain(_) -> false.
+    end.

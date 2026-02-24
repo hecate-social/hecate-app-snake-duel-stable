@@ -1,6 +1,6 @@
 -module(gladiator_environment_tests).
 -include_lib("eunit/include/eunit.hrl").
--include("snake_duel.hrl").
+-include_lib("run_snake_duel/include/snake_duel.hrl").
 -include("gladiator.hrl").
 
 init_creates_running_game_test() ->

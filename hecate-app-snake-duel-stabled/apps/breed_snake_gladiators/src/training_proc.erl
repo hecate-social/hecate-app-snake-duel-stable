@@ -52,7 +52,7 @@ halt(Pid) ->
 
 %% @doc Neuroevolution event handler callback.
 %% Called synchronously from neuroevolution_server process.
-%% MUST NOT block -- sends message to training_proc pid.
+%% MUST NOT block — sends message to training_proc pid.
 -spec handle_event(term(), pid()) -> ok.
 handle_event(Event, TrainingPid) ->
     TrainingPid ! {neuro_event, Event},
@@ -222,7 +222,7 @@ handle_call(_Msg, _From, State) ->
 handle_cast(_Msg, State) ->
     {noreply, State}.
 
-%% Generation completed -- record stats and broadcast
+%% Generation completed — record stats and broadcast
 handle_info({neuro_event, {generation_complete, Data}},
             #training{stable_id = StableId} = State) ->
     GenStats = maps:get(generation_stats, Data),
@@ -253,7 +253,7 @@ handle_info({neuro_event, {generation_complete, Data}},
         worst_fitness = WorstF
     }};
 
-%% Training completed -- extract top-N champions from population, record, stop
+%% Training completed — extract top-N champions from population, record, stop
 handle_info({neuro_event, {training_complete, Data}},
             #training{stable_id = StableId, neuro_pid = NeuroPid,
                       champion_count = ChampionCount} = State) ->
@@ -320,16 +320,14 @@ terminate(_Reason, #training{stable_id = StableId, neuro_pid = NeuroPid}) ->
 %%--------------------------------------------------------------------
 
 extract_top_champions(NeuroPid, ChampionCount, Data) ->
-    %% Use get_last_evaluated_population -- it returns the population
+    %% Use get_last_evaluated_population — it returns the population
     %% sorted by fitness BEFORE the strategy resets non-elite fitness to 0.
     Population = case neuroevolution_server:get_last_evaluated_population(NeuroPid) of
         {ok, [_ | _] = Pop} -> Pop;
         _ ->
             %% Fallback to get_population (older library versions)
-            case neuroevolution_server:get_population(NeuroPid) of
-                {ok, Pop} -> Pop;
-                _ -> []
-            end
+            {ok, Pop} = neuroevolution_server:get_population(NeuroPid),
+            Pop
     end,
     %% Fallback: ensure the best individual from Data is included
     BestInd = maps:get(best_individual, Data, undefined),
@@ -342,6 +340,8 @@ extract_top_champions(NeuroPid, ChampionCount, Data) ->
                 false -> [BestInd | Population]
             end
     end,
+    %% Already sorted by fitness desc from get_last_evaluated_population,
+    %% but re-sort in case BestInd was prepended
     Sorted = lists:sort(fun(A, B) ->
         A#individual.fitness >= B#individual.fitness
     end, AllIndividuals),
