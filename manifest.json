@@ -18,6 +18,8 @@
     "fee_currency": "EUR",
     "node_limit": 0,
     "oci_image": "ghcr.io/hecate-apps/hecate-app-snake-duel-stabled",
-    "min_daemon_version": "0.14.0"
+    "min_daemon_version": "0.14.0",
+    "group_name": "GAMES",
+    "group_icon": "video_game"
   }
 }
